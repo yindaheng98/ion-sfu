@@ -243,14 +243,14 @@ func (p *PeerLocal) Trickle(candidate webrtc.ICECandidateInit, target int) error
 	Logger.V(0).Info("PeerLocal trickle", "peer_id", p.id)
 	switch target {
 	case publisher:
-		if p.subscriber == nil {
+		if p.publisher == nil {
 			return ErrNoTransportEstablished
 		}
 		if err := p.publisher.AddICECandidate(candidate); err != nil {
 			return fmt.Errorf("setting ice candidate: %w", err)
 		}
 	case subscriber:
-		if p.publisher == nil {
+		if p.subscriber == nil {
 			return ErrNoTransportEstablished
 		}
 		if err := p.subscriber.AddICECandidate(candidate); err != nil {
