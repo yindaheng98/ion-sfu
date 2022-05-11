@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	mimeTypeH264 = "video/h264"
-	mimeTypeOpus = "audio/opus"
-	mimeTypeVP8  = "video/vp8"
-	mimeTypeVP9  = "video/vp9"
+	mimeTypeH264 = webrtc.MimeTypeH264
+	mimeTypeOpus = webrtc.MimeTypeOpus
+	mimeTypeVP8  = webrtc.MimeTypeVP8
+	mimeTypeVP9  = webrtc.MimeTypeVP9
 )
 
 const frameMarking = "urn:ietf:params:rtp-hdrext:framemarking"
