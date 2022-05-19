@@ -2,6 +2,7 @@ package sfu
 
 import (
 	"context"
+	"github.com/pion/interceptor"
 	"io"
 	"sync"
 	"time"
@@ -30,14 +31,14 @@ type Subscriber struct {
 	noAutoSubscribe bool
 }
 
-// NewSubscriber creates a new Subscriber
-func NewSubscriber(id string, cfg WebRTCTransportConfig) (*Subscriber, error) {
+// NewSubscriberWithInterceptorRegistry creates a new Subscriber with custom interceptors
+func NewSubscriberWithInterceptorRegistry(id string, cfg WebRTCTransportConfig, ir *interceptor.Registry) (*Subscriber, error) {
 	me, err := getSubscriberMediaEngine()
 	if err != nil {
 		Logger.Error(err, "NewPeer error")
 		return nil, errPeerConnectionInitFailed
 	}
-	api := webrtc.NewAPI(webrtc.WithMediaEngine(me), webrtc.WithSettingEngine(cfg.Setting))
+	api := webrtc.NewAPI(webrtc.WithMediaEngine(me), webrtc.WithSettingEngine(cfg.Setting), webrtc.WithInterceptorRegistry(ir))
 	pc, err := api.NewPeerConnection(cfg.Configuration)
 
 	if err != nil {
@@ -72,6 +73,11 @@ func NewSubscriber(id string, cfg WebRTCTransportConfig) (*Subscriber, error) {
 	go s.downTracksReports()
 
 	return s, nil
+}
+
+// NewSubscriber creates a new Subscriber
+func NewSubscriber(id string, cfg WebRTCTransportConfig) (*Subscriber, error) {
+	return NewSubscriberWithInterceptorRegistry(id, cfg, nil)
 }
 
 func (s *Subscriber) AddDatachannel(peer Peer, dc *Datachannel) error {

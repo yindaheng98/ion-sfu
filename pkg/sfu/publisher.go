@@ -2,6 +2,7 @@ package sfu
 
 import (
 	"fmt"
+	"github.com/pion/interceptor"
 	"io"
 	"sync"
 	"sync/atomic"
@@ -50,15 +51,15 @@ type PublisherTrack struct {
 	clientRelay bool
 }
 
-// NewPublisher creates a new Publisher
-func NewPublisher(id string, session Session, cfg *WebRTCTransportConfig) (*Publisher, error) {
+// NewPublisherWithInterceptorRegistry creates a new Publisher with custom interceptors
+func NewPublisherWithInterceptorRegistry(id string, session Session, cfg *WebRTCTransportConfig, ir *interceptor.Registry) (*Publisher, error) {
 	me, err := getPublisherMediaEngine()
 	if err != nil {
 		Logger.Error(err, "NewPeer error", "peer_id", id)
 		return nil, errPeerConnectionInitFailed
 	}
 
-	api := webrtc.NewAPI(webrtc.WithMediaEngine(me), webrtc.WithSettingEngine(cfg.Setting))
+	api := webrtc.NewAPI(webrtc.WithMediaEngine(me), webrtc.WithSettingEngine(cfg.Setting), webrtc.WithInterceptorRegistry(ir))
 	pc, err := api.NewPeerConnection(cfg.Configuration)
 
 	if err != nil {
@@ -131,6 +132,11 @@ func NewPublisher(id string, session Session, cfg *WebRTCTransportConfig) (*Publ
 	p.router.SetRTCPWriter(p.pc.WriteRTCP)
 
 	return p, nil
+}
+
+// NewPublisher creates a new Publisher
+func NewPublisher(id string, session Session, cfg *WebRTCTransportConfig) (*Publisher, error) {
+	return NewPublisherWithInterceptorRegistry(id, session, cfg, nil)
 }
 
 func (p *Publisher) Answer(offer webrtc.SessionDescription) (webrtc.SessionDescription, error) {

@@ -3,6 +3,7 @@ package sfu
 import (
 	"errors"
 	"fmt"
+	"github.com/pion/interceptor"
 	"sync"
 
 	"github.com/lucsky/cuid"
@@ -83,8 +84,8 @@ func NewPeer(provider SessionProvider) *PeerLocal {
 	}
 }
 
-// Join initializes this peer for a given sessionID
-func (p *PeerLocal) Join(sid, uid string, config ...JoinConfig) error {
+// JoinWithInterceptorRegistry initializes this peer for a given sessionID with custom interceptors
+func (p *PeerLocal) JoinWithInterceptorRegistry(sid, uid string, subIr, pubIr *interceptor.Registry, config ...JoinConfig) error {
 	var conf JoinConfig
 	if len(config) > 0 {
 		conf = config[0]
@@ -105,7 +106,7 @@ func (p *PeerLocal) Join(sid, uid string, config ...JoinConfig) error {
 	p.session = s
 
 	if !conf.NoSubscribe {
-		p.subscriber, err = NewSubscriber(uid, cfg)
+		p.subscriber, err = NewSubscriberWithInterceptorRegistry(uid, cfg, subIr)
 		if err != nil {
 			return fmt.Errorf("error creating transport: %v", err)
 		}
@@ -149,7 +150,7 @@ func (p *PeerLocal) Join(sid, uid string, config ...JoinConfig) error {
 	}
 
 	if !conf.NoPublish {
-		p.publisher, err = NewPublisher(uid, p.session, &cfg)
+		p.publisher, err = NewPublisherWithInterceptorRegistry(uid, p.session, &cfg, pubIr)
 		if err != nil {
 			return fmt.Errorf("error creating transport: %v", err)
 		}
@@ -188,6 +189,11 @@ func (p *PeerLocal) Join(sid, uid string, config ...JoinConfig) error {
 		p.session.Subscribe(p)
 	}
 	return nil
+}
+
+// Join initializes this peer for a given sessionID
+func (p *PeerLocal) Join(sid, uid string, config ...JoinConfig) error {
+	return p.JoinWithInterceptorRegistry(sid, uid, nil, nil, config...)
 }
 
 // Answer an offer from remote
