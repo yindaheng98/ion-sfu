@@ -105,7 +105,10 @@ func (p *PeerLocal) JoinWithInterceptorRegistry(sid, uid string, subIrf, pubIrf 
 	p.session = s
 
 	if !conf.NoSubscribe {
-		subIr := subIrf.NewInterceptorFactory(sid, uid)
+		var subIr InterceptorFactory
+		if subIrf != nil {
+			subIr = subIrf.NewInterceptorFactory(sid, uid)
+		}
 		p.subscriber, err = NewSubscriberWithInterceptorRegistry(uid, cfg, subIr)
 		if err != nil {
 			return fmt.Errorf("error creating transport: %v", err)
@@ -150,7 +153,10 @@ func (p *PeerLocal) JoinWithInterceptorRegistry(sid, uid string, subIrf, pubIrf 
 	}
 
 	if !conf.NoPublish {
-		pubIr := pubIrf.NewInterceptorFactory(sid, uid)
+		var pubIr InterceptorFactory
+		if pubIrf != nil {
+			pubIr = pubIrf.NewInterceptorFactory(sid, uid)
+		}
 		p.publisher, err = NewPublisherWithInterceptorRegistry(uid, p.session, &cfg, pubIr)
 		if err != nil {
 			return fmt.Errorf("error creating transport: %v", err)
