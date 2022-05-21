@@ -74,13 +74,20 @@ type PeerLocal struct {
 
 	remoteAnswerPending bool
 	negotiationPending  bool
+
+	pubInterceptorRegistryFactoryBuilder InterceptorRegistryFactoryBuilder
+	subInterceptorRegistryFactoryBuilder InterceptorRegistryFactoryBuilder
 }
 
 // NewPeer creates a new PeerLocal for signaling with the given SFU
-func NewPeer(provider SessionProvider) *PeerLocal {
-	return &PeerLocal{
+func NewPeer(provider SessionProvider, options ...func(*PeerLocal)) *PeerLocal {
+	p := &PeerLocal{
 		provider: provider,
 	}
+	for _, o := range options {
+		o(p)
+	}
+	return p
 }
 
 // Join initializes this peer for a given sessionID
@@ -105,7 +112,11 @@ func (p *PeerLocal) Join(sid, uid string, config ...JoinConfig) error {
 	p.session = s
 
 	if !conf.NoSubscribe {
-		p.subscriber, err = NewSubscriber(uid, cfg)
+		var irRegFact InterceptorRegistryFactory
+		if p.subInterceptorRegistryFactoryBuilder != nil {
+			irRegFact = p.subInterceptorRegistryFactoryBuilder(sid, uid)
+		}
+		p.subscriber, err = NewSubscriber(uid, cfg, irRegFact)
 		if err != nil {
 			return fmt.Errorf("error creating transport: %v", err)
 		}
@@ -149,7 +160,11 @@ func (p *PeerLocal) Join(sid, uid string, config ...JoinConfig) error {
 	}
 
 	if !conf.NoPublish {
-		p.publisher, err = NewPublisher(uid, p.session, &cfg)
+		var irRegFact InterceptorRegistryFactory
+		if p.pubInterceptorRegistryFactoryBuilder != nil {
+			irRegFact = p.pubInterceptorRegistryFactoryBuilder(sid, uid)
+		}
+		p.publisher, err = NewPublisher(uid, p.session, &cfg, irRegFact)
 		if err != nil {
 			return fmt.Errorf("error creating transport: %v", err)
 		}

@@ -2,6 +2,7 @@ package sfu
 
 import (
 	"context"
+	"github.com/pion/interceptor"
 	"io"
 	"sync"
 	"time"
@@ -31,13 +32,17 @@ type Subscriber struct {
 }
 
 // NewSubscriber creates a new Subscriber
-func NewSubscriber(id string, cfg WebRTCTransportConfig) (*Subscriber, error) {
+func NewSubscriber(id string, cfg WebRTCTransportConfig, irRegFact InterceptorRegistryFactory) (*Subscriber, error) {
 	me, err := getSubscriberMediaEngine()
 	if err != nil {
 		Logger.Error(err, "NewPeer error")
 		return nil, errPeerConnectionInitFailed
 	}
-	api := webrtc.NewAPI(webrtc.WithMediaEngine(me), webrtc.WithSettingEngine(cfg.Setting))
+	var irReg *interceptor.Registry
+	if irRegFact != nil {
+		irReg = irRegFact(me, cfg)
+	}
+	api := webrtc.NewAPI(webrtc.WithMediaEngine(me), webrtc.WithSettingEngine(cfg.Setting), webrtc.WithInterceptorRegistry(irReg))
 	pc, err := api.NewPeerConnection(cfg.Configuration)
 
 	if err != nil {

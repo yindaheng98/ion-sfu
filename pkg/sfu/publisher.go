@@ -2,6 +2,7 @@ package sfu
 
 import (
 	"fmt"
+	"github.com/pion/interceptor"
 	"io"
 	"sync"
 	"sync/atomic"
@@ -51,14 +52,18 @@ type PublisherTrack struct {
 }
 
 // NewPublisher creates a new Publisher
-func NewPublisher(id string, session Session, cfg *WebRTCTransportConfig) (*Publisher, error) {
+func NewPublisher(id string, session Session, cfg *WebRTCTransportConfig, irRegFact InterceptorRegistryFactory) (*Publisher, error) {
 	me, err := getPublisherMediaEngine()
 	if err != nil {
 		Logger.Error(err, "NewPeer error", "peer_id", id)
 		return nil, errPeerConnectionInitFailed
 	}
 
-	api := webrtc.NewAPI(webrtc.WithMediaEngine(me), webrtc.WithSettingEngine(cfg.Setting))
+	var irReg *interceptor.Registry
+	if irRegFact != nil {
+		irReg = irRegFact(me, *cfg)
+	}
+	api := webrtc.NewAPI(webrtc.WithMediaEngine(me), webrtc.WithSettingEngine(cfg.Setting), webrtc.WithInterceptorRegistry(irReg))
 	pc, err := api.NewPeerConnection(cfg.Configuration)
 
 	if err != nil {
