@@ -5,10 +5,10 @@ import (
 	"github.com/pion/webrtc/v3"
 )
 
-type PeerInterceptorFactory interface {
-	NewInterceptorFactory(sid, uid string) InterceptorFactory
+type InterceptorRegistryFactoryFactory interface {
+	NewInterceptorRegistryFactory(sid, uid string) InterceptorRegistryFactory
 }
 
-type InterceptorFactory interface {
+type InterceptorRegistryFactory interface {
 	NewInterceptorRegistry(*webrtc.MediaEngine, WebRTCTransportConfig) *interceptor.Registry
 }

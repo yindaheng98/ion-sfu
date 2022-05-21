@@ -84,7 +84,7 @@ func NewPeer(provider SessionProvider) *PeerLocal {
 }
 
 // JoinWithInterceptorRegistry initializes this peer for a given sessionID with custom interceptors
-func (p *PeerLocal) JoinWithInterceptorRegistry(sid, uid string, subIrf, pubIrf PeerInterceptorFactory, config ...JoinConfig) error {
+func (p *PeerLocal) JoinWithInterceptorRegistry(sid, uid string, subIrf, pubIrf InterceptorRegistryFactoryFactory, config ...JoinConfig) error {
 	var conf JoinConfig
 	if len(config) > 0 {
 		conf = config[0]
@@ -105,9 +105,9 @@ func (p *PeerLocal) JoinWithInterceptorRegistry(sid, uid string, subIrf, pubIrf 
 	p.session = s
 
 	if !conf.NoSubscribe {
-		var subIr InterceptorFactory
+		var subIr InterceptorRegistryFactory
 		if subIrf != nil {
-			subIr = subIrf.NewInterceptorFactory(sid, uid)
+			subIr = subIrf.NewInterceptorRegistryFactory(sid, uid)
 		}
 		p.subscriber, err = NewSubscriberWithInterceptorRegistry(uid, cfg, subIr)
 		if err != nil {
@@ -153,9 +153,9 @@ func (p *PeerLocal) JoinWithInterceptorRegistry(sid, uid string, subIrf, pubIrf 
 	}
 
 	if !conf.NoPublish {
-		var pubIr InterceptorFactory
+		var pubIr InterceptorRegistryFactory
 		if pubIrf != nil {
-			pubIr = pubIrf.NewInterceptorFactory(sid, uid)
+			pubIr = pubIrf.NewInterceptorRegistryFactory(sid, uid)
 		}
 		p.publisher, err = NewPublisherWithInterceptorRegistry(uid, p.session, &cfg, pubIr)
 		if err != nil {

@@ -52,7 +52,7 @@ type PublisherTrack struct {
 }
 
 // NewPublisherWithInterceptorRegistry creates a new Publisher with custom interceptors
-func NewPublisherWithInterceptorRegistry(id string, session Session, cfg *WebRTCTransportConfig, irf InterceptorFactory) (*Publisher, error) {
+func NewPublisherWithInterceptorRegistry(id string, session Session, cfg *WebRTCTransportConfig, irf InterceptorRegistryFactory) (*Publisher, error) {
 	me, err := getPublisherMediaEngine()
 	if err != nil {
 		Logger.Error(err, "NewPeer error", "peer_id", id)
