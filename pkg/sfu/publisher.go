@@ -52,13 +52,17 @@ type PublisherTrack struct {
 }
 
 // NewPublisherWithInterceptorRegistry creates a new Publisher with custom interceptors
-func NewPublisherWithInterceptorRegistry(id string, session Session, cfg *WebRTCTransportConfig, ir *interceptor.Registry) (*Publisher, error) {
+func NewPublisherWithInterceptorRegistry(id string, session Session, cfg *WebRTCTransportConfig, irf InterceptorFactory) (*Publisher, error) {
 	me, err := getPublisherMediaEngine()
 	if err != nil {
 		Logger.Error(err, "NewPeer error", "peer_id", id)
 		return nil, errPeerConnectionInitFailed
 	}
 
+	var ir *interceptor.Registry
+	if irf != nil {
+		ir = irf.NewInterceptorRegistry(me, *cfg)
+	}
 	api := webrtc.NewAPI(webrtc.WithMediaEngine(me), webrtc.WithSettingEngine(cfg.Setting), webrtc.WithInterceptorRegistry(ir))
 	pc, err := api.NewPeerConnection(cfg.Configuration)
 

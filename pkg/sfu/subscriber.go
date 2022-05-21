@@ -32,11 +32,16 @@ type Subscriber struct {
 }
 
 // NewSubscriberWithInterceptorRegistry creates a new Subscriber with custom interceptors
-func NewSubscriberWithInterceptorRegistry(id string, cfg WebRTCTransportConfig, ir *interceptor.Registry) (*Subscriber, error) {
+func NewSubscriberWithInterceptorRegistry(id string, cfg WebRTCTransportConfig, irf InterceptorFactory) (*Subscriber, error) {
 	me, err := getSubscriberMediaEngine()
 	if err != nil {
 		Logger.Error(err, "NewPeer error")
 		return nil, errPeerConnectionInitFailed
+	}
+
+	var ir *interceptor.Registry
+	if irf != nil {
+		ir = irf.NewInterceptorRegistry(me, cfg)
 	}
 	api := webrtc.NewAPI(webrtc.WithMediaEngine(me), webrtc.WithSettingEngine(cfg.Setting), webrtc.WithInterceptorRegistry(ir))
 	pc, err := api.NewPeerConnection(cfg.Configuration)

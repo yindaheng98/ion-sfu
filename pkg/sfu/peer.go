@@ -3,7 +3,6 @@ package sfu
 import (
 	"errors"
 	"fmt"
-	"github.com/pion/interceptor"
 	"sync"
 
 	"github.com/lucsky/cuid"
@@ -85,7 +84,7 @@ func NewPeer(provider SessionProvider) *PeerLocal {
 }
 
 // JoinWithInterceptorRegistry initializes this peer for a given sessionID with custom interceptors
-func (p *PeerLocal) JoinWithInterceptorRegistry(sid, uid string, subIr, pubIr *interceptor.Registry, config ...JoinConfig) error {
+func (p *PeerLocal) JoinWithInterceptorRegistry(sid, uid string, subIrf, pubIrf PeerInterceptorFactory, config ...JoinConfig) error {
 	var conf JoinConfig
 	if len(config) > 0 {
 		conf = config[0]
@@ -106,6 +105,7 @@ func (p *PeerLocal) JoinWithInterceptorRegistry(sid, uid string, subIr, pubIr *i
 	p.session = s
 
 	if !conf.NoSubscribe {
+		subIr := subIrf.NewInterceptorFactory(sid, uid)
 		p.subscriber, err = NewSubscriberWithInterceptorRegistry(uid, cfg, subIr)
 		if err != nil {
 			return fmt.Errorf("error creating transport: %v", err)
@@ -150,6 +150,7 @@ func (p *PeerLocal) JoinWithInterceptorRegistry(sid, uid string, subIr, pubIr *i
 	}
 
 	if !conf.NoPublish {
+		pubIr := pubIrf.NewInterceptorFactory(sid, uid)
 		p.publisher, err = NewPublisherWithInterceptorRegistry(uid, p.session, &cfg, pubIr)
 		if err != nil {
 			return fmt.Errorf("error creating transport: %v", err)
