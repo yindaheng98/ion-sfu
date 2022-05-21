@@ -114,7 +114,7 @@ func (p *PeerLocal) Join(sid, uid string, config ...JoinConfig) error {
 	if !conf.NoSubscribe {
 		var irRegFact InterceptorRegistryFactory
 		if p.subInterceptorRegistryFactoryBuilder != nil {
-			irRegFact = p.subInterceptorRegistryFactoryBuilder(sid, uid)
+			irRegFact = p.subInterceptorRegistryFactoryBuilder.Build(sid, uid)
 		}
 		p.subscriber, err = NewSubscriber(uid, cfg, irRegFact)
 		if err != nil {
@@ -162,7 +162,7 @@ func (p *PeerLocal) Join(sid, uid string, config ...JoinConfig) error {
 	if !conf.NoPublish {
 		var irRegFact InterceptorRegistryFactory
 		if p.pubInterceptorRegistryFactoryBuilder != nil {
-			irRegFact = p.pubInterceptorRegistryFactoryBuilder(sid, uid)
+			irRegFact = p.pubInterceptorRegistryFactoryBuilder.Build(sid, uid)
 		}
 		p.publisher, err = NewPublisher(uid, p.session, &cfg, irRegFact)
 		if err != nil {

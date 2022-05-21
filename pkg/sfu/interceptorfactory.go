@@ -5,7 +5,9 @@ import (
 	"github.com/pion/webrtc/v3"
 )
 
-type InterceptorRegistryFactoryBuilder func(sid, uid string) InterceptorRegistryFactory
+type InterceptorRegistryFactoryBuilder interface {
+	Build(sid, uid string) InterceptorRegistryFactory
+}
 
 type InterceptorRegistryFactory func(*webrtc.MediaEngine, WebRTCTransportConfig) *interceptor.Registry
 
