@@ -98,7 +98,7 @@ func (p *PeerLocal) Join(sid, uid string, config ...JoinConfig) error {
 	}
 
 	if p.session != nil {
-		Logger.V(1).Info("peer already exists", "session_id", sid, "peer_id", p.id, "publisher_id", p.publisher.id)
+		Logger.V(1).Info("peer already exists", "session_id", sid, "peer_id", p.id)
 		return ErrTransportExists
 	}
 
